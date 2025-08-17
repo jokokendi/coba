@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>VPS Terminal</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #87CEEB; /* biru langit */
+        color: #000;
+        font-family: monospace;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    .terminal-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        padding: 10px;
+        overflow: hidden;
+    }
+    .terminal-body {
+        flex: 1;
+        overflow-y: auto;
+        white-space: pre;
+        word-wrap: break-word;
+    }
+    .terminal-input-container {
+        display: flex;
+        align-items: center;
+    }
+    .terminal-prompt {
+        margin-right: 5px;
+    }
+    #terminal-input {
+        background: none;
+        border: none;
+        color: #000;
+        outline: none;
+        font-family: monospace;
+        flex: 1;
+    }
+    #terminal-input:focus {
+        border-right: 2px solid #000;
+        animation: blink 1s step-start infinite;
+    }
+    @keyframes blink { 50% { border-color: transparent; } }
+    .virtual-keys {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    .virtual-keys button {
+        background: #00BFFF;
+        color: #fff;
+        border: 1px solid #555;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-family: monospace;
+        border-radius: 4px;
+    }
+</style>
+</head>
+<body>
+<div class="terminal-container">
+    <div class="terminal-body"></div>
+    <div class="terminal-input-container">
+        <span class="terminal-prompt">user@loading:~$</span>
+        <input type="text" id="terminal-input" autofocus />
+    </div>
+    <div class="virtual-keys">
+        <button onclick="clearTerminal()">CLEAR</button>
+    </div>
+</div>
+
+<script>
+const terminalBody = document.querySelector('.terminal-body');
+const terminalInput = document.getElementById('terminal-input');
+const promptSpan = document.querySelector('.terminal-prompt');
+
+let currentDir = '~';
+const fileSystem = {
+    '~': ['node_modules', 'package-lock.json', 'package.json', 'public', 'server.js'],
+    'public': ['index.html', 'style.css', 'app.js']
+};
+
+function appendOutput(text) {
+    terminalBody.textContent += text + '\n';
+    terminalBody.scrollTop = terminalBody.scrollHeight;
+}
+
+function updatePrompt() {
+    promptSpan.textContent = `user@loading${currentDir === '~' ? '' : '/' + currentDir}:$`;
+}
+
+function expandWildcard(folder, pattern) {
+    const regex = new RegExp('^' + pattern.replace('*', '.*') + '$');
+    const list = fileSystem[folder] || [];
+    const match = list.find(f => regex.test(f));
+    return match || pattern;
+}
+
+function clearTerminal() {
+    terminalBody.textContent = '';
+    terminalInput.value = '';
+}
+
+terminalInput.addEventListener('keydown', function(e) {
+    if(e.key === 'Enter') {
+        const command = terminalInput.value.trim();
+        appendOutput(promptSpan.textContent + ' ' + command);
+
+        const args = command.split(' ');
+
+        if(args[0] === 'cd') {
+            if(args[1]) {
+                const targetDir = args[1].includes('*') ? expandWildcard(currentDir, args[1]) : args[1];
+                if(fileSystem[targetDir]) {
+                    currentDir = targetDir;
+                } else {
+                    appendOutput(`bash: cd: ${targetDir}: No such file or directory`);
+                }
+            }
+        } else if(args[0] === 'ls') {
+            appendOutput((fileSystem[currentDir] || []).join(' '));
+        } else if(args[0] === 'clear') {
+            clearTerminal();
+        } else {
+            appendOutput(`${args[0]}: command not found`);
+        }
+
+        updatePrompt();
+        terminalInput.value = '';
+    }
+});
+
+updatePrompt();
+</script>
+</body>
+</html>
