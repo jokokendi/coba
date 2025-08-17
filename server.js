@@ -1,47 +1,29 @@
-// server.js
 const express = require('express');
-const { WebSocketServer } = require('ws');
-const { spawn } = require('child_process');
-const path = require('path');
+const { exec } = require('child_process');
+const http = require('http');
+const socketIo = require('socket.io');
 
 const app = express();
-const PORT = 3000;
+const server = http.createServer(app);
+const io = socketIo(server);
 
-// Menyajikan file statis (HTML, CSS, JS) dari folder 'public'
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public')); // folder public untuk index.html, style.css, script.js
 
-const server = app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+io.on('connection', (socket) => {
+    console.log('User connected');
 
-const wss = new WebSocketServer({ server });
+    socket.on('command', (cmd) => {
+        if(cmd.trim() === '') return;
 
-wss.on('connection', ws => {
-    console.log('Koneksi WebSocket baru dibuat');
-
-    // Menjalankan shell interaktif (bash)
-    const shell = spawn('bash');
-
-    // Mengirim output shell ke klien (browser)
-    shell.stdout.on('data', data => {
-        ws.send(data.toString());
-    });
-
-    // Mengirim error shell ke klien
-    shell.stderr.on('data', data => {
-        ws.send(data.toString());
-    });
-
-    // Menerima input dari klien dan mengirimkannya ke shell
-    ws.on('message', message => {
-        const command = message.toString() + '\n';
-        console.log(`Perintah diterima: ${command.trim()}`);
-        shell.stdin.write(command);
-    });
-
-    // Menutup shell saat koneksi klien ditutup
-    ws.on('close', () => {
-        console.log('Koneksi WebSocket ditutup');
-        shell.kill();
+        // Jalankan command di server
+        exec(cmd, { shell: '/bin/bash' }, (error, stdout, stderr) => {
+            let output = '';
+            if (error) output += error.message + '\n';
+            if (stderr) output += stderr;
+            if (stdout) output += stdout;
+            socket.emit('output', output || '');
+        });
     });
 });
+
+server.listen(3000, () => console.log('Server running at http://localhost:3000'));
