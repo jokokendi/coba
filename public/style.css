@@ -38,7 +38,6 @@ body {
     flex: 1;
 }
 
-/* Cursor berkedip */
 #terminal-input:focus {
     border-right: 2px solid #fff;
     animation: blink 1s step-start infinite;
@@ -47,3 +46,21 @@ body {
 @keyframes blink {
     50% { border-color: transparent; }
 }
+
+/* Virtual keys */
+.virtual-keys {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.virtual-keys button {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: monospace;
+    border-radius: 4px;
+    }
