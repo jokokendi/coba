@@ -1,46 +1,60 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const terminalInput = document.getElementById('terminal-input');
-    const terminalOutput = document.getElementById('terminal-output');
+const input = document.getElementById('terminal-input');
+const output = document.getElementById('terminal-output');
 
-    // Membuat koneksi WebSocket ke server
-    const socket = new WebSocket('ws://localhost:3000');
+const socket = io(); // koneksi ke server
 
-    socket.onopen = () => {
-        console.log('Koneksi WebSocket berhasil!');
-        terminalOutput.innerHTML = '';
-        appendOutput('Selamat datang di Terminal Ubuntu. Ketik perintah Anda.');
-        terminalInput.focus();
-    };
+let history = [];
+let historyIndex = -1;
 
-    socket.onmessage = event => {
-        appendOutput(event.data);
-    };
+function addLine(text) {
+    const line = document.createElement('pre');
+    line.textContent = text;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+}
 
-    socket.onclose = () => {
-        appendOutput('\nKoneksi ke server terputus.');
-        terminalInput.disabled = true;
-    };
+// Handle input
+input.addEventListener('keydown', function(e) {
+    const command = input.value.trim();
 
-    socket.onerror = error => {
-        console.error('WebSocket Error:', error);
-        appendOutput('\nTerjadi kesalahan koneksi.');
-    };
-
-    terminalInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const command = terminalInput.value.trim();
-            if (command) {
-                // Kirim perintah ke server
-                socket.send(command);
-                terminalInput.value = '';
-            }
+    // Enter key
+    if (e.key === 'Enter') {
+        if(command){
+            addLine(`user@ubuntu:~$ ${command}`);
+            history.push(command);
+            historyIndex = history.length;
+            socket.emit('command', command); // kirim ke server
         }
-    });
-
-    function appendOutput(text) {
-        const p = document.createElement('pre');
-        p.textContent = text;
-        terminalOutput.appendChild(p);
-        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        input.value = '';
     }
+
+    // Arrow Up: previous command
+    else if (e.key === 'ArrowUp') {
+        if(historyIndex > 0){
+            historyIndex--;
+            input.value = history[historyIndex];
+        }
+    }
+
+    // Arrow Down: next command
+    else if (e.key === 'ArrowDown') {
+        if(historyIndex < history.length-1){
+            historyIndex++;
+            input.value = history[historyIndex];
+        } else {
+            historyIndex = history.length;
+            input.value = '';
+        }
+    }
+
+    // Ctrl + C
+    else if (e.ctrlKey && e.key === 'c') {
+        addLine('^C');
+        input.value = '';
+    }
+});
+
+// Terima output dari server
+socket.on('output', function(data) {
+    addLine(data || '');
 });
