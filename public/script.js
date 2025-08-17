@@ -4,8 +4,29 @@ const virtualKeys = document.querySelectorAll('.virtual-keys button');
 
 const socket = io();
 
+let VPS_NAME = "loading";
+let currentDir = "~";
 let history = [];
 let historyIndex = -1;
+
+// Terima nama VPS
+socket.on('vpsname', function(name) {
+    VPS_NAME = name;
+    updatePrompt();
+});
+
+// Terima direktori saat ini
+socket.on('cwd', function(cwd) {
+    // tampilkan ~ jika home
+    const home = require('os').homedir ? require('os').homedir() : '';
+    currentDir = cwd.replace(home, '~');
+    updatePrompt();
+});
+
+function updatePrompt() {
+    const promptSpan = document.querySelector('.terminal-prompt');
+    promptSpan.textContent = `user@${VPS_NAME}:${currentDir}$`;
+}
 
 function addLine(text) {
     const line = document.createElement('pre');
@@ -17,34 +38,32 @@ function addLine(text) {
 // Handle keyboard input
 input.addEventListener('keydown', function(e) {
     const command = input.value.trim();
-
+    
     if (e.key === 'Enter') {
-        // Clear command
-        if(command === 'clear') {
+        if (command === 'clear') {
             output.innerHTML = '';
             input.value = '';
             return;
         }
-
-        if(command){
-            addLine(`user@ubuntu:~$ ${command}`);
+        
+        if (command) {
+            addLine(`user@${VPS_NAME}:${currentDir}$ ${command}`);
             history.push(command);
             historyIndex = history.length;
-
-            // Kirim command ke server
+            
             socket.emit('command', command);
         }
-
+        
         input.value = '';
     }
     else if (e.key === 'ArrowUp') {
-        if(historyIndex > 0){
+        if (historyIndex > 0) {
             historyIndex--;
             input.value = history[historyIndex];
         }
     }
     else if (e.key === 'ArrowDown') {
-        if(historyIndex < history.length-1){
+        if (historyIndex < history.length - 1) {
             historyIndex++;
             input.value = history[historyIndex];
         } else {
@@ -58,7 +77,7 @@ input.addEventListener('keydown', function(e) {
     }
 });
 
-// Handle output dari server
+// Output dari server
 socket.on('output', function(data) {
     addLine(data || '');
 });
@@ -67,18 +86,18 @@ socket.on('output', function(data) {
 virtualKeys.forEach(btn => {
     btn.addEventListener('click', () => {
         const key = btn.dataset.key;
-
-        if(key === 'Control') {
+        
+        if (key === 'Control') {
             input.dataset.ctrl = 'true';
             input.focus();
-        } else if(input.dataset.ctrl && key.toLowerCase() === 'c') {
+        } else if (input.dataset.ctrl && key.toLowerCase() === 'c') {
             addLine('^C');
             input.value = '';
             input.dataset.ctrl = '';
         } else {
             input.value += key;
         }
-
+        
         input.focus();
     });
 });
