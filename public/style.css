@@ -1,82 +1,49 @@
 body {
-    background-color: #2e3436;
-    color: #eeeeec;
-    font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
-    font-size: 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #fff;
+    font-family: monospace;
 }
 
 .terminal-container {
-    width: 80%;
-    max-width: 900px;
-    height: 70%;
-    background-color: #000;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 10px;
     border: 1px solid #333;
-    border-radius: 6px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.terminal-header {
-    background-color: #300a24;
-    color: #f7f7f7;
-    padding: 8px 15px;
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px solid #1c1c1c;
-    font-family: sans-serif;
-    font-size: 12px;
+    background-color: #000;
 }
 
 .terminal-body {
-    flex-grow: 1;
-    padding: 10px;
+    min-height: 400px;
     overflow-y: auto;
     white-space: pre-wrap;
-    word-wrap: break-word;
-    scrollbar-width: thin;
-    scrollbar-color: #555 #1c1c1c;
-}
-
-.terminal-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.terminal-body::-webkit-scrollbar-track {
-    background: #1c1c1c;
-}
-
-.terminal-body::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
-    border: 2px solid #1c1c1c;
 }
 
 .terminal-input-container {
     display: flex;
-    padding: 5px 10px;
-    background-color: #000;
-    border-top: 1px solid #1c1c1c;
     align-items: center;
 }
 
 .terminal-prompt {
-    color: #729fcf;
     margin-right: 5px;
 }
 
 #terminal-input {
-    background-color: transparent;
+    background: none;
     border: none;
-    color: #eeeeec;
-    font-family: 'Ubuntu Mono', 'Courier New', Courier, monospace;
-    font-size: 14px;
-    flex-grow: 1;
+    color: #fff;
     outline: none;
+    font-family: monospace;
+    flex: 1;
+}
+
+/* Cursor berkedip */
+#terminal-input:focus {
+    border-right: 2px solid #fff;
+    animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+    50% { border-color: transparent; }
 }
