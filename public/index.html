@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ubuntu Web Terminal</title>
+    <title>Web Ubuntu Terminal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="terminal-container">
-        <div class="terminal-header">
-            <span class="terminal-title">user@ubuntu: ~</span>
-        </div>
         <div class="terminal-body" id="terminal-output">
-            <pre>Menghubungkan ke server...</pre>
+            <pre>Welcome to Web Ubuntu Terminal!</pre>
         </div>
         <div class="terminal-input-container">
             <span class="terminal-prompt">user@ubuntu:~$</span>
             <input type="text" id="terminal-input" autofocus>
         </div>
     </div>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
