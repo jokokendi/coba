@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.use(express.static('public')); // folder public untuk index.html, style.css, script.js
+app.use(express.static('public')); // folder public
 
 io.on('connection', (socket) => {
     console.log('User connected');
